@@ -6,48 +6,45 @@ const UserModel = (sequelize) => {
   class User extends Model {
     static associate(models) {
       User.hasMany(models.Thermostat, {
-        foreignKey: 'userId',
+        foreignKey: 'user_id',
         as: 'thermostats',
       });
     }
   }
 
   User.init({
-    name: {
-      type: DataTypes.STRING,
+    username: {
+      type: DataTypes.STRING(50),
       allowNull: false,
+      unique: true,
       validate: {
         notEmpty: true,
       },
     },
     email: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(100),
       allowNull: false,
       unique: true,
       validate: {
         isEmail: true,
       },
     },
-    password: {
-      type: DataTypes.STRING,
+    password_hash: {
+      type: DataTypes.STRING(255),
       allowNull: false,
-    },
+    }
   }, {
     sequelize,
     modelName: 'User',
-    hooks: {
-      beforeCreate: async (user) => {
-        if (user.password) {
-          user.password = await bcrypt.hash(user.password, 10);
-        }
-      },
-      beforeUpdate: async (user) => {
-        if (user.changed('password')) {
-          user.password = await bcrypt.hash(user.password, 10);
-        }
-      },
-    },
+    tableName: 'users',
+    timestamps: false,
+    underscored: true,
   });
+
+  // Method to validate password
+  User.prototype.validatePassword = async function(password) {
+    return bcrypt.compare(password, this.password_hash);
+  };
 
   return User;
 };

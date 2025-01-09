@@ -1,31 +1,40 @@
+// routes/auth.js
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { User } from '../models/index.js';
 
-
 const router = express.Router();
 
 // Register route
 router.post('/register', async (req, res) => {
-   // Add CORS headers
-   res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
- 
   try {
-    const { name, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     // Check if user exists
-    const userExists = await User.findOne({ where: { email } });
+    const userExists = await User.findOne({ 
+      where: { 
+        [sequelize.Op.or]: [
+          { email },
+          { username }
+        ]
+      } 
+    });
+    
     if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ 
+        message: userExists.email === email ? 'Email already exists' : 'Username already taken' 
+      });
     }
+
+    // Hash password
+    const password_hash = await bcrypt.hash(password, 10);
 
     // Create user
     const user = await User.create({
-      name,
+      username,
       email,
-      password: await bcrypt.hash(password, 10)
+      password_hash
     });
 
     // Generate token
@@ -39,13 +48,15 @@ router.post('/register', async (req, res) => {
       token,
       user: {
         id: user.id,
-        name: user.name,
+        username: user.username,
         email: user.email
       }
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ 
+      message: error.message || 'Server error' 
+    });
   }
 });
 
@@ -55,13 +66,18 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     // Find user
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ 
+      where: { 
+        email 
+      } 
+    });
+    
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await user.validatePassword(password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
@@ -77,13 +93,15 @@ router.post('/login', async (req, res) => {
       token,
       user: {
         id: user.id,
-        name: user.name,
+        username: user.username,
         email: user.email
       }
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ 
+      message: error.message || 'Server error' 
+    });
   }
 });
 
