@@ -1,13 +1,11 @@
-// models/user.js
-'use strict';
-const { Model } = require('sequelize');
-const bcrypt = require('bcryptjs');
+import { Model, DataTypes } from 'sequelize';
+import bcrypt from 'bcryptjs';
 
-module.exports = (sequelize, DataTypes) => {
+export default (sequelize) => {
   class User extends Model {
     static associate(models) {
       // define associations here
-      // User.hasMany(models.Thermostat)
+      User.hasMany(models.Thermostat);
     }
 
     async comparePassword(candidatePassword) {
