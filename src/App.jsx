@@ -1,4 +1,10 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { 
+  BrowserRouter as Router, 
+  Routes, 
+  Route, 
+  Navigate, 
+  Link // Added Link import
+} from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LogIn, UserPlus, LogOut } from 'lucide-react';
 import Login from './pages/Login';

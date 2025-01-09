@@ -8,6 +8,7 @@ const UserModel = (sequelize) => {
       User.hasMany(models.Thermostat, {
         foreignKey: 'user_id',
         as: 'thermostats',
+        onDelete: 'CASCADE'
       });
     }
   }
@@ -32,13 +33,25 @@ const UserModel = (sequelize) => {
     password_hash: {
       type: DataTypes.STRING(255),
       allowNull: false,
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
     }
   }, {
     sequelize,
     modelName: 'User',
     tableName: 'users',
-    timestamps: false,
     underscored: true,
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
   });
 
   // Method to validate password

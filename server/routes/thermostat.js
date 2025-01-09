@@ -8,13 +8,26 @@ const router = express.Router();
 // Get all thermostats for a user
 router.get('/', auth, async (req, res) => {
   try {
-    const thermostats = await Thermostat.findAll({ 
+    let thermostat = await Thermostat.findOne({ 
       where: { user_id: req.user.userId }
     });
-    res.json(thermostats);
+
+    // If no thermostat exists, create a default one
+    if (!thermostat) {
+      thermostat = await Thermostat.create({
+        user_id: req.user.userId,
+        name: 'Main Thermostat',
+        current_temperature: 20,
+        target_temperature: 40,
+        mode: 'heat',
+        is_active: true
+      });
+    }
+
+    res.json([thermostat]);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Thermostat fetch error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 
@@ -138,22 +151,18 @@ router.put('/:id/mode', auth, async (req, res) => {
     if (!thermostat) {
       return res.status(404).json({ message: 'Thermostat not found' });
     }
+
     // Set default temperatures based on mode
     let defaultTemp;
     if (mode === 'heat') {
-      defaultTemp = 22; // 22°C for heating
+      defaultTemp = 22;
     } else if (mode === 'cool') {
-      defaultTemp = 18; // 18°C for cooling
-    } else {
-      defaultTemp = 20; // 20°C for off
+      defaultTemp = 18;
     }
-    await thermostat.update({
-      target_temperature: defaultTemp,
-      updated_at: new Date()
-    });
 
     await thermostat.update({
       mode,
+      target_temperature: defaultTemp || thermostat.target_temperature,
       updated_at: new Date()
     });
 

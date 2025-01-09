@@ -14,7 +14,6 @@ const sequelize = new Sequelize({
   database: process.env.DB_NAME || 'thermostat_db',
   logging: false,
   dialectOptions: {
-    // Only use SSL in production
     ssl: process.env.NODE_ENV === 'production' ? {
       require: true,
       rejectUnauthorized: false
@@ -29,12 +28,34 @@ const Thermostat = defineThermostat(sequelize);
 // Setup associations
 User.hasMany(Thermostat, {
   foreignKey: 'userId',
-  as: 'thermostats'
+  as: 'thermostats',
+  onDelete: 'CASCADE'
 });
 
 Thermostat.belongsTo(User, {
   foreignKey: 'userId',
-  as: 'user'
+  as: 'user',
+  onDelete: 'CASCADE'
 });
+
+// Initialize Database
+const initDatabase = async () => {
+  try {
+    // First, sync User model
+    await User.sync({ force: true });
+    console.log('Users table created');
+
+    // Then, sync Thermostat model
+    await Thermostat.sync({ force: true });
+    console.log('Thermostats table created');
+
+    console.log('All tables synchronized successfully');
+  } catch (error) {
+    console.error('Database initialization error:', error);
+    throw error;
+  }
+};
+
+sequelize.initDatabase = initDatabase;
 
 export { sequelize, User, Thermostat };

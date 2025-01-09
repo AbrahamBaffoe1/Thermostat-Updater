@@ -12,68 +12,96 @@ const ThermostatModel = (sequelize) => {
   }
 
   Thermostat.init({
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+      defaultValue: 'Main Thermostat',
       validate: {
         notEmpty: true,
       },
     },
-    currentTemperature: {
+    current_temperature: {
       type: DataTypes.FLOAT,
       allowNull: false,
       defaultValue: 20.0,
+      field: 'current_temperature',
       validate: {
         min: 0,
         max: 40,
       },
     },
-    targetTemperature: {
+    target_temperature: {
       type: DataTypes.FLOAT,
       allowNull: false,
       defaultValue: 22.0,
+      field: 'target_temperature',
       validate: {
         min: 15,
         max: 30,
       },
     },
     mode: {
-      type: DataTypes.ENUM('heat', 'cool', 'off'),
+      type: DataTypes.STRING(10),
       allowNull: false,
       defaultValue: 'off',
+      validate: {
+        isIn: [['heat', 'cool', 'off']]
+      }
     },
     zone: {
       type: DataTypes.STRING,
       allowNull: false,
       defaultValue: 'Main Zone',
     },
-    isActive: {
+    is_active: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
+      field: 'is_active',
       defaultValue: true,
     },
     schedule: {
       type: DataTypes.JSONB,
       allowNull: true,
     },
-    userId: {
+    user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'Users',
         key: 'id',
       },
+      field: 'user_id',
     },
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      field: 'created_at'
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      field: 'updated_at'
+    }
   }, {
     sequelize,
     modelName: 'Thermostat',
+    tableName: 'thermostats',
+    underscored: true,
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
     hooks: {
       beforeValidate: (thermostat) => {
-        if (thermostat.currentTemperature) {
-          thermostat.currentTemperature = parseFloat(thermostat.currentTemperature.toFixed(1));
+        if (thermostat.current_temperature) {
+          thermostat.current_temperature = parseFloat(thermostat.current_temperature.toFixed(1));
         }
-        if (thermostat.targetTemperature) {
-          thermostat.targetTemperature = parseFloat(thermostat.targetTemperature.toFixed(1));
+        if (thermostat.target_temperature) {
+          thermostat.target_temperature = parseFloat(thermostat.target_temperature.toFixed(1));
         }
       },
     },

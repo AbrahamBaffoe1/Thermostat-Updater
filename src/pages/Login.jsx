@@ -53,8 +53,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen w-full p-4 flex flex-col items-center justify-center bg-gray-900">
-      <div className="bg-gray-800/50 backdrop-blur-lg p-8 max-w-md w-full mx-auto rounded-xl shadow-2xl border border-gray-700">
+<div className="min-h-screen w-full flex flex-col items-center justify-center bg-gray-900">
+<div className="bg-gray-800/50 backdrop-blur-lg p-8 max-w-md w-full mx-auto rounded-xl shadow-2xl border border-gray-700">
         <div className="flex flex-col items-center mb-8">
           <LogIn size={48} className="text-blue-400 mb-4" />
           <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
