@@ -44,8 +44,8 @@ router.post('/register', async (req, res) => {
       user_id: user.id,
       name: 'Main Thermostat',
       current_temperature: 20.0,
-      target_temperature: 40.0,
-      mode: 'heat',
+      target_temperature: 20.0,
+      mode: 'off',
       is_active: true,
       created_at: new Date(),
       updated_at: new Date()

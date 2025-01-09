@@ -18,7 +18,7 @@ router.get('/', auth, async (req, res) => {
         user_id: req.user.userId,
         name: 'Main Thermostat',
         current_temperature: 20,
-        target_temperature: 40,
+        target_temperature: 22,
         mode: 'heat',
         is_active: true
       });
