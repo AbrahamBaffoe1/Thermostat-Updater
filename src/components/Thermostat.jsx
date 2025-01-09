@@ -133,49 +133,53 @@ const Thermostat = () => {
  };
 
  return (
-   <div className="flex flex-col items-center justify-center">
-     {error && (
-       <div className="mb-4 px-4 py-2 bg-red-500/10 border border-red-500/50 rounded-lg text-red-500">
-         {error}
+   <div className="min-h-screen w-full flex items-center justify-center p-4 bg-gray-900">
+     <div className="w-full max-w-md mx-auto bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 shadow-2xl">
+       {error && (
+         <div className="mb-4 px-4 py-2 bg-red-500/10 border border-red-500/50 rounded-lg text-red-500 text-center">
+           {error}
+         </div>
+       )}
+
+       {/* Mode Toggle */}
+       <div className="flex justify-center mb-6">
+         <button 
+           onClick={toggleMode}
+           disabled={isLoading}
+           className={`px-6 py-2 rounded-full text-white transition-all flex items-center gap-2 ${getModeGradient()} disabled:opacity-50`}
+         >
+           {getIcon()}
+           <span className="text-sm sm:text-base">Mode: {mode === 'heat' ? 'Heat' : 'Cool'}</span>
+         </button>
        </div>
-     )}
 
-     {/* Mode Toggle */}
-     <button 
-       onClick={toggleMode}
-       disabled={isLoading}
-       className={`mb-6 px-6 py-2 rounded-full text-white transition-all flex items-center gap-2 ${getModeGradient()} disabled:opacity-50`}
-     >
-       {getIcon()}
-       <span>Mode: {mode === 'heat' ? 'Heat' : 'Cool'}</span>
-     </button>
+       {/* Temperature Display */}
+       <div className="text-center mb-8">
+         <span className={`text-6xl sm:text-7xl font-bold ${getTemperatureColor()} transition-colors`}>
+           {temperature.toFixed(1)}°C
+         </span>
+       </div>
 
-     {/* Temperature Display */}
-     <div className="text-7xl font-bold mb-8">
-       <span className={`${getTemperatureColor()} transition-colors`}>
-         {temperature.toFixed(1)}°C
-       </span>
-     </div>
-
-     {/* Temperature Controls */}
-     <div className="flex flex-col gap-4">
-       <button
-         onClick={handleIncrement}
-         disabled={isLoading}
-         className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-sm disabled:opacity-50"
-         aria-label="Increase temperature"
-       >
-         <ChevronUp size={32} className="text-white" />
-       </button>
-       
-       <button
-         onClick={handleDecrement}
-         disabled={isLoading}
-         className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-sm disabled:opacity-50"
-         aria-label="Decrease temperature"
-       >
-         <ChevronDown size={32} className="text-white" />
-       </button>
+       {/* Temperature Controls */}
+       <div className="flex flex-col items-center gap-4">
+         <button
+           onClick={handleIncrement}
+           disabled={isLoading}
+           className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-sm disabled:opacity-50"
+           aria-label="Increase temperature"
+         >
+           <ChevronUp size={32} className="text-white" />
+         </button>
+         
+         <button
+           onClick={handleDecrement}
+           disabled={isLoading}
+           className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors backdrop-blur-sm disabled:opacity-50"
+           aria-label="Decrease temperature"
+         >
+           <ChevronDown size={32} className="text-white" />
+         </button>
+       </div>
      </div>
    </div>
  );
