@@ -8,6 +8,10 @@ const router = express.Router();
 
 // Register route
 router.post('/register', async (req, res) => {
+   // Add CORS headers
+   res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+ 
   try {
     const { name, email, password } = req.body;
 

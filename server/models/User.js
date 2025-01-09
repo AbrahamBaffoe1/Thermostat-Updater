@@ -1,5 +1,6 @@
 // models/User.js
 import { Model, DataTypes } from 'sequelize';
+import bcrypt from 'bcryptjs';
 
 const UserModel = (sequelize) => {
   class User extends Model {
@@ -34,6 +35,18 @@ const UserModel = (sequelize) => {
   }, {
     sequelize,
     modelName: 'User',
+    hooks: {
+      beforeCreate: async (user) => {
+        if (user.password) {
+          user.password = await bcrypt.hash(user.password, 10);
+        }
+      },
+      beforeUpdate: async (user) => {
+        if (user.changed('password')) {
+          user.password = await bcrypt.hash(user.password, 10);
+        }
+      },
+    },
   });
 
   return User;
