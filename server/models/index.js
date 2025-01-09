@@ -1,13 +1,10 @@
+// models/index.js
 import { Sequelize } from 'sequelize';
+import defineUser from './User.js';
+import defineThermostat from './Thermostat.js';
 import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import User from './User';
 
 dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -15,20 +12,29 @@ const sequelize = new Sequelize({
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME || 'thermostat_db',
-  logging: false
-});
-
-// Initialize models
-const models = {
-  User: User(sequelize)
-};
-
-// Setup associations
-Object.keys(models).forEach(modelName => {
-  if (models[modelName].associate) {
-    models[modelName].associate(models);
+  logging: false,
+  dialectOptions: {
+    // Only use SSL in production
+    ssl: process.env.NODE_ENV === 'production' ? {
+      require: true,
+      rejectUnauthorized: false
+    } : false
   }
 });
 
-export { sequelize };
-export default models;
+// Initialize models
+const User = defineUser(sequelize);
+const Thermostat = defineThermostat(sequelize);
+
+// Setup associations
+User.hasMany(Thermostat, {
+  foreignKey: 'userId',
+  as: 'thermostats'
+});
+
+Thermostat.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user'
+});
+
+export { sequelize, User, Thermostat };

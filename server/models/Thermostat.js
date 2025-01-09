@@ -1,10 +1,13 @@
+// models/Thermostat.js
 import { Model, DataTypes } from 'sequelize';
 
-export default (sequelize) => {
+const ThermostatModel = (sequelize) => {
   class Thermostat extends Model {
     static associate(models) {
-      // define association here
-      Thermostat.belongsTo(models.User);
+      Thermostat.belongsTo(models.User, {
+        foreignKey: 'userId',
+        as: 'user',
+      });
     }
   }
 
@@ -13,8 +16,8 @@ export default (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        notEmpty: true
-      }
+        notEmpty: true,
+      },
     },
     currentTemperature: {
       type: DataTypes.FLOAT,
@@ -22,8 +25,8 @@ export default (sequelize) => {
       defaultValue: 20.0,
       validate: {
         min: 0,
-        max: 40
-      }
+        max: 40,
+      },
     },
     targetTemperature: {
       type: DataTypes.FLOAT,
@@ -31,51 +34,52 @@ export default (sequelize) => {
       defaultValue: 22.0,
       validate: {
         min: 15,
-        max: 30
-      }
+        max: 30,
+      },
     },
     mode: {
       type: DataTypes.ENUM('heat', 'cool', 'off'),
       allowNull: false,
-      defaultValue: 'off'
+      defaultValue: 'off',
     },
     zone: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: 'Main Zone'
+      defaultValue: 'Main Zone',
     },
     isActive: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: true
+      defaultValue: true,
     },
     schedule: {
-      type: DataTypes.JSONB,  // Stores weekly schedule
-      allowNull: true
+      type: DataTypes.JSONB,
+      allowNull: true,
     },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: 'Users',
-        key: 'id'
-      }
-    }
+        key: 'id',
+      },
+    },
   }, {
     sequelize,
     modelName: 'Thermostat',
     hooks: {
       beforeValidate: (thermostat) => {
-        // Round temperatures to 1 decimal place
         if (thermostat.currentTemperature) {
           thermostat.currentTemperature = parseFloat(thermostat.currentTemperature.toFixed(1));
         }
         if (thermostat.targetTemperature) {
           thermostat.targetTemperature = parseFloat(thermostat.targetTemperature.toFixed(1));
         }
-      }
-    }
+      },
+    },
   });
 
   return Thermostat;
 };
+
+export default ThermostatModel;
