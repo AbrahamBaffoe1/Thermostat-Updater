@@ -1,6 +1,7 @@
 const { Sequelize } = require('sequelize');
 const defineUser = require('./User');
 const defineThermostat = require('./Thermostat');
+const defineTemperatureHistory = require('./TemperatureHistory');
 require('dotenv').config();
 
 const sequelize = new Sequelize({
@@ -21,6 +22,7 @@ const sequelize = new Sequelize({
 // Initialize models
 const User = defineUser(sequelize);
 const Thermostat = defineThermostat(sequelize);
+const TemperatureHistory = defineTemperatureHistory(sequelize);
 
 // Setup associations
 User.hasMany(Thermostat, {
@@ -32,6 +34,18 @@ User.hasMany(Thermostat, {
 Thermostat.belongsTo(User, {
   foreignKey: 'user_id',
   as: 'user',
+  onDelete: 'CASCADE'
+});
+
+Thermostat.hasMany(TemperatureHistory, {
+  foreignKey: 'thermostat_id',
+  as: 'history',
+  onDelete: 'CASCADE'
+});
+
+TemperatureHistory.belongsTo(Thermostat, {
+  foreignKey: 'thermostat_id',
+  as: 'thermostat',
   onDelete: 'CASCADE'
 });
 
@@ -51,5 +65,6 @@ sequelize.initDatabase = initDatabase;
 module.exports = {
   sequelize,
   User,
-  Thermostat
+  Thermostat,
+  TemperatureHistory
 };

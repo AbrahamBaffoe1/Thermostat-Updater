@@ -1,46 +1,30 @@
-// server/routes/thermostat.js
-import express from 'express';
-import { Thermostat } from '../models/index.js';
-import auth from '../middleware/auth.js';
+const express = require('express');
+const auth = require('../middleware/auth');
+const thermostatController = require('../controllers/thermostat');
 
 const router = express.Router();
 
-// Get all thermostats for a user
-router.get('/', auth, async (req, res) => {
-  try {
-    let thermostat = await Thermostat.findOne({ 
-      where: { user_id: req.user.userId }
-    });
+// Base CRUD routes
+router.post('/', auth, thermostatController.create);
+router.get('/', auth, thermostatController.getAllForUser);
+router.get('/:id', auth, thermostatController.getOne);
+router.put('/:id', auth, thermostatController.update);
+router.delete('/:id', auth, thermostatController.delete);
 
-    // If no thermostat exists, create a default one
-    if (!thermostat) {
-      thermostat = await Thermostat.create({
-        user_id: req.user.userId,
-        name: 'Main Thermostat',
-        current_temperature: 20,
-        target_temperature: 22,
-        mode: 'heat',
-        is_active: true
-      });
-    }
+// Schedule management
+router.post('/:id/schedule', auth, thermostatController.setSchedule);
 
-    res.json([thermostat]);
-  } catch (error) {
-    console.error('Thermostat fetch error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
+// Analytics and monitoring
+router.get('/:id/history', auth, thermostatController.getHistory);
+router.get('/:id/analytics', auth, thermostatController.getAnalytics);
 
-// Get specific thermostat status
+// Zone management
+router.get('/zones/summary', auth, thermostatController.getZonesSummary);
+
+// Backward compatibility for existing frontend
 router.get('/:id/status', auth, async (req, res) => {
   try {
-    const thermostat = await Thermostat.findOne({
-      where: { 
-        id: req.params.id,
-        user_id: req.user.userId 
-      }
-    });
-
+    const thermostat = await thermostatController.getOne(req, res);
     if (!thermostat) {
       return res.status(404).json({ message: 'Thermostat not found' });
     }
@@ -58,119 +42,26 @@ router.get('/:id/status', auth, async (req, res) => {
   }
 });
 
-// Update thermostat settings
-router.put('/:id', auth, async (req, res) => {
-  try {
-    const { temperature, mode } = req.body;
-    const thermostat = await Thermostat.findOne({ 
-      where: { 
-        id: req.params.id,
-        user_id: req.user.userId 
-      }
-    });
-
-    if (!thermostat) {
-      return res.status(404).json({ message: 'Thermostat not found' });
-    }
-
-    const updates = {};
-    if (temperature !== undefined) {
-      updates.target_temperature = temperature;
-    }
-    if (mode !== undefined) {
-      updates.mode = mode;
-    }
-
-    await thermostat.update({
-      ...updates,
-      updated_at: new Date()
-    });
-
-    res.json(thermostat);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Create new thermostat
-router.post('/', auth, async (req, res) => {
-  try {
-    const { name, location } = req.body;
-    
-    const thermostat = await Thermostat.create({
-      name,
-      location,
-      user_id: req.user.userId,
-      current_temperature: 20,
-      target_temperature: 22,
-      mode: 'off',
-      is_active: true
-    });
-
-    res.status(201).json(thermostat);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Delete thermostat
-router.delete('/:id', auth, async (req, res) => {
-  try {
-    const thermostat = await Thermostat.findOne({
-      where: { 
-        id: req.params.id,
-        user_id: req.user.userId 
-      }
-    });
-
-    if (!thermostat) {
-      return res.status(404).json({ message: 'Thermostat not found' });
-    }
-
-    await thermostat.destroy();
-    res.json({ message: 'Thermostat deleted successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Update mode only
+// Specialized mode update endpoint (kept for backward compatibility)
 router.put('/:id/mode', auth, async (req, res) => {
   try {
     const { mode } = req.body;
-    const thermostat = await Thermostat.findOne({ 
-      where: { 
-        id: req.params.id,
-        user_id: req.user.userId 
-      }
-    });
-
-    if (!thermostat) {
-      return res.status(404).json({ message: 'Thermostat not found' });
-    }
-
+    
     // Set default temperatures based on mode
-    let defaultTemp;
+    let target_temperature;
     if (mode === 'heat') {
-      defaultTemp = 22;
+      target_temperature = 22;
     } else if (mode === 'cool') {
-      defaultTemp = 18;
+      target_temperature = 18;
     }
 
-    await thermostat.update({
-      mode,
-      target_temperature: defaultTemp || thermostat.target_temperature,
-      updated_at: new Date()
-    });
-
-    res.json(thermostat);
+    // Use the controller's update method
+    req.body = { mode, target_temperature };
+    return thermostatController.update(req, res);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-export default router;
+module.exports = router;
