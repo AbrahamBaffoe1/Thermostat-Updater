@@ -1,11 +1,10 @@
-// models/Thermostat.js
-import { Model, DataTypes } from 'sequelize';
+const { Model, DataTypes } = require('sequelize');
 
-const ThermostatModel = (sequelize) => {
+module.exports = (sequelize) => {
   class Thermostat extends Model {
     static associate(models) {
       Thermostat.belongsTo(models.User, {
-        foreignKey: 'userId',
+        foreignKey: 'user_id',
         as: 'user',
       });
     }
@@ -109,5 +108,3 @@ const ThermostatModel = (sequelize) => {
 
   return Thermostat;
 };
-
-export default ThermostatModel;

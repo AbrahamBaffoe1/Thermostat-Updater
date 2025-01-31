@@ -1,8 +1,7 @@
-// models/User.js
-import { Model, DataTypes } from 'sequelize';
-import bcrypt from 'bcryptjs';
+const { Model, DataTypes } = require('sequelize');
+const bcrypt = require('bcryptjs');
 
-const UserModel = (sequelize) => {
+module.exports = (sequelize) => {
   class User extends Model {
     static associate(models) {
       User.hasMany(models.Thermostat, {
@@ -14,7 +13,7 @@ const UserModel = (sequelize) => {
   }
 
   User.init({
-    username: {
+    name: {
       type: DataTypes.STRING(50),
       allowNull: false,
       unique: true,
@@ -29,6 +28,13 @@ const UserModel = (sequelize) => {
       validate: {
         isEmail: true,
       },
+    },
+    password: {
+      type: DataTypes.VIRTUAL,
+      allowNull: false,
+      validate: {
+        len: [6, 100]
+      }
     },
     password_hash: {
       type: DataTypes.STRING(255),
@@ -54,12 +60,18 @@ const UserModel = (sequelize) => {
     updatedAt: 'updated_at'
   });
 
-  // Method to validate password
-  User.prototype.validatePassword = async function(password) {
+  // Hash password before saving
+  User.beforeCreate(async (user) => {
+    if (user.changed('password')) {
+      const salt = await bcrypt.genSalt(10);
+      user.password_hash = await bcrypt.hash(user.password, salt);
+    }
+  });
+
+  // Method to compare password
+  User.prototype.comparePassword = async function(password) {
     return bcrypt.compare(password, this.password_hash);
   };
 
   return User;
 };
-
-export default UserModel;

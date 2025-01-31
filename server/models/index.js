@@ -1,10 +1,7 @@
-// models/index.js
-import { Sequelize } from 'sequelize';
-import defineUser from './User.js';
-import defineThermostat from './Thermostat.js';
-import dotenv from 'dotenv';
-
-dotenv.config();
+const { Sequelize } = require('sequelize');
+const defineUser = require('./User');
+const defineThermostat = require('./Thermostat');
+require('dotenv').config();
 
 const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -27,13 +24,13 @@ const Thermostat = defineThermostat(sequelize);
 
 // Setup associations
 User.hasMany(Thermostat, {
-  foreignKey: 'userId',
+  foreignKey: 'user_id',
   as: 'thermostats',
   onDelete: 'CASCADE'
 });
 
 Thermostat.belongsTo(User, {
-  foreignKey: 'userId',
+  foreignKey: 'user_id',
   as: 'user',
   onDelete: 'CASCADE'
 });
@@ -41,15 +38,8 @@ Thermostat.belongsTo(User, {
 // Initialize Database
 const initDatabase = async () => {
   try {
-    // First, sync User model
-    await User.sync({ force: true });
-    console.log('Users table created');
-
-    // Then, sync Thermostat model
-    await Thermostat.sync({ force: true });
-    console.log('Thermostats table created');
-
-    console.log('All tables synchronized successfully');
+    await sequelize.sync({ alter: true });
+    console.log('Database synchronized successfully');
   } catch (error) {
     console.error('Database initialization error:', error);
     throw error;
@@ -58,4 +48,8 @@ const initDatabase = async () => {
 
 sequelize.initDatabase = initDatabase;
 
-export { sequelize, User, Thermostat };
+module.exports = {
+  sequelize,
+  User,
+  Thermostat
+};
