@@ -1,54 +1,58 @@
-const { Model, DataTypes } = require('sequelize');
-const bcrypt = require('bcryptjs');
+import { Model, DataTypes } from 'sequelize';
+import bcrypt from 'bcryptjs';
 
-module.exports = (sequelize) => {
+export default (sequelize) => {
   class User extends Model {
     static associate(models) {
       User.hasMany(models.Thermostat, {
         foreignKey: 'user_id',
-        as: 'thermostats',
-        onDelete: 'CASCADE'
+        as: 'thermostats'
       });
+    }
+
+    async validatePassword(password) {
+      return bcrypt.compare(password, this.password);
     }
   }
 
   User.init({
-    name: {
-      type: DataTypes.STRING(50),
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true
+    },
+    username: {
+      type: DataTypes.STRING,
       allowNull: false,
       unique: true,
       validate: {
-        notEmpty: true,
-      },
+        len: [3, 30]
+      }
     },
     email: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING,
       allowNull: false,
       unique: true,
       validate: {
-        isEmail: true,
-      },
+        isEmail: true
+      }
     },
     password: {
-      type: DataTypes.VIRTUAL,
+      type: DataTypes.STRING,
       allowNull: false,
       validate: {
         len: [6, 100]
       }
     },
-    password_hash: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-    },
     created_at: {
       type: DataTypes.DATE,
-      allowNull: false,
       defaultValue: DataTypes.NOW,
+      field: 'created_at'
     },
     updated_at: {
       type: DataTypes.DATE,
-      allowNull: false,
       defaultValue: DataTypes.NOW,
+      field: 'updated_at'
     }
   }, {
     sequelize,
@@ -57,21 +61,22 @@ module.exports = (sequelize) => {
     underscored: true,
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
-  });
-
-  // Hash password before saving
-  User.beforeCreate(async (user) => {
-    if (user.changed('password')) {
-      const salt = await bcrypt.genSalt(10);
-      user.password_hash = await bcrypt.hash(user.password, salt);
+    updatedAt: 'updated_at',
+    hooks: {
+      beforeCreate: async (user) => {
+        if (user.password) {
+          const salt = await bcrypt.genSalt(10);
+          user.password = await bcrypt.hash(user.password, salt);
+        }
+      },
+      beforeUpdate: async (user) => {
+        if (user.changed('password')) {
+          const salt = await bcrypt.genSalt(10);
+          user.password = await bcrypt.hash(user.password, salt);
+        }
+      }
     }
   });
-
-  // Method to compare password
-  User.prototype.comparePassword = async function(password) {
-    return bcrypt.compare(password, this.password_hash);
-  };
 
   return User;
 };

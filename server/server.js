@@ -1,10 +1,12 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
-const { sequelize } = require('./models');
-const authRoutes = require('./routes/auth');
-const thermostatRoutes = require('./routes/thermostat');
-const { corsOptions } = require('./config/cors');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { sequelize } from './models/index.js';
+import authRoutes from './routes/auth.js';
+import thermostatRoutes from './routes/thermostat.js';
+import { corsOptions } from './config/cors.js';
+
+dotenv.config();
 
 // Create Express app
 const app = express();

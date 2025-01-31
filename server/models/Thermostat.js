@@ -1,11 +1,15 @@
-const { Model, DataTypes } = require('sequelize');
+import { Model, DataTypes } from 'sequelize';
 
-module.exports = (sequelize) => {
+export default (sequelize) => {
   class Thermostat extends Model {
     static associate(models) {
       Thermostat.belongsTo(models.User, {
         foreignKey: 'user_id',
         as: 'user',
+      });
+      Thermostat.hasMany(models.TemperatureHistory, {
+        foreignKey: 'thermostat_id',
+        as: 'history',
       });
     }
   }

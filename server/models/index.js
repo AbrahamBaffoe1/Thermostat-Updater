@@ -1,8 +1,10 @@
-const { Sequelize } = require('sequelize');
-const defineUser = require('./User');
-const defineThermostat = require('./Thermostat');
-const defineTemperatureHistory = require('./TemperatureHistory');
-require('dotenv').config();
+import { Sequelize } from 'sequelize';
+import defineUser from './User.js';
+import defineThermostat from './Thermostat.js';
+import defineTemperatureHistory from './TemperatureHistory.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -62,7 +64,7 @@ const initDatabase = async () => {
 
 sequelize.initDatabase = initDatabase;
 
-module.exports = {
+export {
   sequelize,
   User,
   Thermostat,
